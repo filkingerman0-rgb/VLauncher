@@ -3,12 +3,31 @@ on: [push, workflow_dispatch]
 jobs:
   android:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/kivy/buildozer:master
     steps:
       - uses: actions/checkout@v4
-      - name: Build APK with Cyborg Buildozer
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Buildozer dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libbz2-dev libreadline-dev libsqlite3-dev libssl-dev libgdbm-dev libdb-dev libpcap-dev xz-utils libffi-dev
+          pip3 install --upgrade buildozer cython kivy
+      - name: Accept SDK Licenses
+        run: |
+          export BUILDOZER_ALLOW_ROOT=1
+          mkdir -p ~/.android || true
+          touch ~/.android/repositories.cfg || true
+          yes | buildozer android licenses || true
+      - name: Build APK with Buildozer
+        run: |
+          export BUILDOZER_ALLOW_ROOT=1
           buildozer -v android debug
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
