@@ -5,6 +5,7 @@ package.domain = org.wolf
 source.dir = .
 source.include_exts = py,png,jpg
 version = 0.1
+requirements = python3, kivy, pyjnius, requests
 orientation = landscape
 fullscreen = 1
 android.archs = arm64-v8a, armeabi-v7a
