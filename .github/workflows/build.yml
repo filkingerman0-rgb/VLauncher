@@ -16,8 +16,11 @@ jobs:
           cordova create vlauncher org.wolf.vlauncher VLauncher
           cd vlauncher
           cordova platform add android
-          # Устанавливаем официальный плагин для запуска Пожава
+          
+          # Настраиваем строго горизонтальный экран и добавляем плагин запуска
+          sed -i '/<\/widget>/i \    <preference name="Orientation" value="landscape" />' config.xml
           cordova plugin add cordova-plugin-launcher
+          
           rm -rf www/*
           cp -r ../www/* www/
           cordova build android --device
