@@ -1,26 +1,40 @@
-name: Build VLauncher JS
+name: Build VLauncher
 on: [push, workflow_dispatch]
 jobs:
-  build:
+  android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
         with:
-          node-version: '20'
-      - name: Install Cordova
-        run: npm install -g cordova
-      - name: Create Cordova Project
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Buildozer dependencies
         run: |
-          cordova create vlauncher org.wolf.vlauncher VLauncher
-          cd vlauncher
-          cordova platform add android
-          rm -rf www/*
-          cp -r ../www/* www/
-          cordova build android --device
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libbz2-dev libreadline-dev libsqlite3-dev libssl-dev libgdbm-dev libdb-dev libpcap-dev xz-utils libffi-dev
+          pip3 install --upgrade buildozer cython kivy
+      - name: Hardcore Accept All Licenses
+        run: |
+          mkdir -p ~/.android || true
+          touch ~/.android/repositories.cfg || true
+          # Создаем глобальный маркер согласия для Android SDK tools
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses || true
+          echo -e "\n24431f66315b74744137e81cc374d326c924ac0d" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+      - name: Build APK with Buildozer
+        run: |
+          export BUILDOZER_ALLOW_ROOT=1
+          export ANDROID_LAUNCHER_NONINTERACTIVE=true
+          # Пропускаем любые вопросы через стандартный конвейер
+          yes | buildozer -v android debug
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: VLauncher-APK
-          path: vlauncher/platforms/android/app/build/outputs/apk/debug/*.apk
+          path: bin/*.apk
