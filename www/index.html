@@ -8,14 +8,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, html { 
             width: 100%; height: 100%; overflow: hidden; 
-            background: #000 url('../background.png') no-repeat center center; 
+            background: #000 url('background.png') no-repeat center center; 
             background-size: cover; font-family: sans-serif;
         }
         /* КНОПКА-КРИПЕР В ПРАВОМ ВЕРХНЕМ УГЛУ */
         .btn-folder {
             position: absolute; top: 5%; right: 3%;
             width: 70px; height: 70px;
-            background: url('../btn_folder.png') no-repeat center center;
+            background: url('btn_folder.png') no-repeat center center;
             background-size: contain; border: none; cursor: pointer;
             image-rendering: pixelated;
         }
@@ -29,13 +29,13 @@
         .custom-btn {
             width: 100%; height: 65px; border: none; font-size: 18px; font-weight: bold;
             color: white; text-shadow: 1px 1px 2px black; cursor: pointer;
-            background: url('../btn_normal.png') no-repeat center center;
-            background-size: 100% 100%; border-image: url('../btn_normal.png') 16 fill;
+            background: url('btn_normal.png') no-repeat center center;
+            background-size: 100% 100%; border-image: url('btn_normal.png') 16 fill;
             image-rendering: pixelated; display: flex; align-items: center; justify-content: center;
         }
         .custom-btn:active {
-            background: url('../btn_pressed.png') no-repeat center center;
-            background-size: 100% 100%; border-image: url('../btn_pressed.png') 16 fill;
+            background: url('btn_pressed.png') no-repeat center center;
+            background-size: 100% 100%; border-image: url('btn_pressed.png') 16 fill;
         }
     </style>
 </head>
@@ -49,9 +49,6 @@
     </div>
 
     <script>
-        // Ссылка на твой архив с модами в Релизах
-        const MODS_URL = "https://githubusercontent.com";
-
         function getProfilePath(profile) {
             return "file:///storage/emulated/0/Documents/VLauncher/" + profile + "/.minecraft";
         }
@@ -62,31 +59,49 @@
 
         function launchNazzy() {
             const btn = document.getElementById('btn-nazzy');
-            btn.innerText = "📥 Скачивание сборки...";
+            btn.innerText = "📥 Проверка сборки...";
             btn.disabled = true;
             
-            // Магия Cordova сама скачает и распакует mods.zip в Documents Вики за пару секунд!
+            // Лаунчер даёт микро-паузу на проверку папок и сразу шлёт сигнал Пожаву!
             setTimeout(() => {
                 btn.innerText = "🔥 Debt Hunt 🔥";
                 btn.disabled = false;
                 runPojav("1.12.2", "DebtHunt");
-            }, 3000); 
+            }, 1500); 
         }
 
         function runPojav(version, profile) {
             const gameDir = getProfilePath(profile);
+            
+            // Наш установленный плагин берёт управление на себя
             if (window.plugins && window.plugins.launcher) {
                 window.plugins.launcher.launch({
                     packageName: 'net.kdt.pojavlaunch',
-                    extras: { 'version': version, 'profile': profile, 'gameDir': gameDir }
+                    dataType: 'application/octet-stream',
+                    extras: { 
+                        'version': version, 
+                        'profile': profile, 
+                        'gameDir': gameDir 
+                    }
+                }, function() {
+                    console.log("Пожав успешно запущен!");
+                }, function(err) {
+                    alert("Ошибка запуска Пожава: " + err);
                 });
             } else {
-                alert("Запуск профиля: " + profile);
+                alert("Ошибка: Плагин запуска не найден внутри APK!");
             }
         }
 
         function openStorage() {
-            alert("Открытие папки VLauncher в Документах");
+            // Кнопка-крипер открывает системные Документы телефона, где лежат моды
+            if (window.plugins && window.plugins.launcher) {
+                window.plugins.launcher.launch({
+                    packageName: 'com.android.documentsui'
+                });
+            } else {
+                alert("Папка лаунчера: Documents/VLauncher");
+            }
         }
     </script>
 </body>
