@@ -9,7 +9,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libbz2-dev libreadline-dev libsqlite3-dev libssl-dev libgdbm-dev libdb-dev libpcap-dev xz-utils libffi-dev
+          pip3 install --upgrade buildozer cython kivy
       - name: Build APK with Buildozer
-        uses: ArtemGovorov/buildozer-action@v1
+        run: |
+          export BUILDOZER_ALLOW_ROOT=1
+          buildozer -v android debug
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          command: buildozer -v android debug --allow-root
+          name: VLauncher-APK
+          path: bin/*.apk
