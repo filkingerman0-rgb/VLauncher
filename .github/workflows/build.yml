@@ -3,35 +3,12 @@ on: [push, workflow_dispatch]
 jobs:
   android:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/kivy/buildozer:master
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install Buildozer dependencies
+      - name: Build APK with Cyborg Buildozer
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libbz2-dev libreadline-dev libsqlite3-dev libssl-dev libgdbm-dev libdb-dev libpcap-dev xz-utils libffi-dev
-          pip3 install --upgrade buildozer cython kivy
-      - name: Inject Android SDK Licenses
-        run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses || true
-          mkdir -p $ANDROID_HOME/licenses || true
-          echo -e "\n24431f66315b74744137e81cc374d326c924ac0d" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "\n24431f66315b74744137e81cc374d326c924ac0d" > $ANDROID_HOME/licenses/android-sdk-license
-          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
-          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/android-sdk-preview-license
-      - name: Build APK with Buildozer
-        run: |
-          export BUILDOZER_ALLOW_ROOT=1
           buildozer -v android debug
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
