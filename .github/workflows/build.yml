@@ -21,6 +21,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libbz2-dev libreadline-dev libsqlite3-dev libssl-dev libgdbm-dev libdb-dev libpcap-dev xz-utils libffi-dev
           pip3 install --upgrade buildozer cython kivy
+      - name: Accept SDK Licenses
+        run: |
+          export BUILDOZER_ALLOW_ROOT=1
+          auto-accept-licenses() { yes | buildozer android licenses; }
+          auto-accept-licenses || true
       - name: Build APK with Buildozer
         run: |
           export BUILDOZER_ALLOW_ROOT=1
