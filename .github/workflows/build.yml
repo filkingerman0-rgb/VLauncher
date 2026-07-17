@@ -16,6 +16,8 @@ jobs:
           cordova create vlauncher org.wolf.vlauncher VLauncher
           cd vlauncher
           cordova platform add android
+          # Устанавливаем официальный плагин для запуска Пожава
+          cordova plugin add cordova-plugin-launcher
           rm -rf www/*
           cp -r ../www/* www/
           cordova build android --device
