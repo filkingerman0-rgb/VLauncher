@@ -17,8 +17,9 @@ jobs:
           cd vlauncher
           cordova platform add android
           
-          # Настраиваем строго горизонтальный экран и добавляем плагин запуска
+          # Настраиваем горизонтальный экран, плагин запуска и кастомную иконку
           sed -i '/<\/widget>/i \    <preference name="Orientation" value="landscape" />' config.xml
+          sed -i '/<\/widget>/i \    <icon src="www/icon.png" />' config.xml
           cordova plugin add cordova-plugin-launcher
           
           rm -rf www/*
