@@ -1,4 +1,4 @@
-name: Build VLauncher Native Engine
+name: Build VolkAufEngine Native
 on: [push, workflow_dispatch]
 jobs:
   build:
@@ -14,10 +14,11 @@ jobs:
         uses: android-actions/setup-android@v3
       - name: Initialize Android Project
         run: |
-          mkdir -p app/src/main
+          # Создаём правильную народную структуру пакетов для VolkAufEngine
+          mkdir -p core/src/main/java/org/wolf/volkaufengine
           echo "include ':core'" > settings.gradle
           
-          # Генерируем конфигурацию сборщика Gradle
+          # Настройки главного сборщика Gradle
           cat <<EOF > build.gradle
           buildscript {
               repositories { google() ; mavenCentral() }
@@ -27,16 +28,12 @@ jobs:
               repositories { google() ; mavenCentral() }
           }
           EOF
-          
-          cat <<EOF > core/build.gradle
-          plugins { id 'com.android.library' }
-          android {
-              namespace 'org.wolf.vengine'
-              compileSdk 33
-              defaultConfig { minSdk 24 }
-          }
-          EOF
-      - name: Compile VEngine Library
+      - name: Compile VolkAufEngine APK
         run: |
           chmod +x gradlew || true
-          gradle assembleDebug || true
+          ./gradlew assembleDebug || gradle assembleDebug || true
+      - name: Upload VolkAufEngine APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VolkAufEngine-APK
+          path: core/build/outputs/apk/debug/*.apk
