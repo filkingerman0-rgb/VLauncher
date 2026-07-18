@@ -1,37 +1,32 @@
-name: Build VolkAufEngine Native
+name: Build VolkAufEngine Ultimate JS
 on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java JDK 17
-        uses: actions/setup-java@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Initialize Android Project
+          node-version: '20'
+      - name: Install Cordova
+        run: npm install -g cordova
+      - name: Create Cordova Project
         run: |
-          mkdir -p core/src/main/java/org/wolf/volkaufengine
-          echo "include ':core'" > settings.gradle
+          cordova create vlauncher org.wolf.volkaufengine VolkAufEngine
+          cd vlauncher
+          cordova platform add android
           
-          cat <<EOF > build.gradle
-          buildscript {
-              repositories { google() ; mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.1.1' }
-          }
-          allprojects {
-              repositories { google() ; mavenCentral() }
-          }
-          EOF
-      - name: Compile VolkAufEngine APK
-        run: |
-          # Используем встроенный глобальный компилятор Gradle, чтобы не зависеть от файлов в корне
-          gradle assembleDebug --stacktrace
+          # Настраиваем строго горизонтальный экран и кастомную иконку
+          sed -i '/<\/widget>/i \    <preference name="Orientation" value="landscape" />' config.xml
+          sed -i '/<\/widget>/i \    <icon src="www/icon.png" />' config.xml
+          
+          cordova plugin add cordova-plugin-launcher
+          rm -rf www/*
+          cp -r ../www/* www/
+          cordova build android --device
       - name: Upload VolkAufEngine APK
         uses: actions/upload-artifact@v4
         with:
           name: VolkAufEngine-APK
-          path: "core/build/outputs/apk/debug/*.apk"
+          path: vlauncher/platforms/android/app/build/outputs/apk/debug/*.apk
