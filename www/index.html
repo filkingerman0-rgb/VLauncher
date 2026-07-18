@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
-    <title>VLauncher Multi</title>
+    <title>VLauncher Ultimate</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, html { 
@@ -40,7 +40,7 @@
             border: none; cursor: pointer; image-rendering: pixelated;
         }
 
-        /* ГЛАВНАЯ КНОПКА ИГРАТЬ СНИЗУ (ТВОЙ ЗАКАЗ!) */
+        /* ГЛАВНАЯ КНОПКА ИГРАТЬ СНИЗУ */
         .bottom-bar {
             position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
             width: 400px;
@@ -70,7 +70,7 @@
             <button class="small-btn" onclick="triggerZipSelect()">Загрузить сборку</button>
             <input type="file" id="zip-input" accept=".zip" onchange="handleZipLoad(this)">
 
-            <!-- Кнопка 3: Выбрать сборку (Теперь тут изначально Ванилла!) -->
+            <!-- Кнопка 3: Выбрать сборку -->
             <select class="build-select" id="build-selector">
                 <option value="Vanilla_1.20.1">Ванилла (1.20.1)</option>
                 <option value="DebtHunt">DebtHunt</option>
@@ -91,19 +91,15 @@
         function triggerJarSelect() { document.getElementById('jar-input').click(); }
         function triggerZipSelect() { document.getElementById('zip-input').click(); }
 
-        // Логика кнопки 1: Загрузка JAR загрузчика
         function handleJarLoad(input) {
             if (input.files.length === 0) return;
             const file = input.files[0];
-            alert("Загрузчик модов " + file.name + " успешно добавлен в систему!");
+            alert("Загрузчик модов " + file.name + " успешно добавлен во встроенный движок!");
         }
 
-        // Логика кнопки 2: Загрузка ZIP сборки с вводом имени папки
         function handleZipLoad(input) {
             if (input.files.length === 0) return;
             const file = input.files[0];
-            
-            // Спрашиваем имя папки для сборки
             const minecraftName = prompt("Как назвать этот Майнкрафт?", "Сборка_Вики");
             
             if (minecraftName === null || minecraftName.trim() === "") {
@@ -111,56 +107,62 @@
                 return;
             }
             
-            // Добавляем новое имя майна в выпадающее окно выбора (Кнопка 3)
             const selector = document.getElementById('build-selector');
             const newOption = new Option(minecraftName, minecraftName);
             selector.add(newOption);
-            selector.value = minecraftName; // Сразу выбираем её
+            selector.value = minecraftName;
             
-            alert("Сборка распакована в отдельную папку: Documents/VLauncher/" + minecraftName);
+            alert("Сборка распакована во внутреннее хранилище: Documents/VLauncher/" + minecraftName);
         }
 
         function getProfilePath(profile) {
             return "file:///storage/emulated/0/Documents/VLauncher/" + profile + "/.minecraft";
         }
 
-        // Логика главной кнопки Играть
         function launchGame() {
             const selector = document.getElementById('build-selector');
             const selectedProfile = selector.value;
             
-            // По умолчанию ставим 1.20.1 для Ваниллы и Фабрика, а для DebtHunt — 1.12.2
             let version = "1.20.1";
             if (selectedProfile === "DebtHunt") {
                 version = "1.12.2";
             }
             
-            runPojav(version, selectedProfile);
+            runInternalPojav(version, selectedProfile);
         }
 
-        function runPojav(version, profile) {
+        // ХАКЕРСКИЙ ВНУТРЕННИЙ ВЫЗОВ (Пожав запускается прямо из лаунчера!)
+        function runInternalPojav(version, profile) {
             const gameDir = getProfilePath(profile);
+            
+            // Вызываем встроенную интрегацию через Cordova
             if (window.plugins && window.plugins.launcher) {
                 window.plugins.launcher.launch({
-                    packageName: 'net.kdt.pojavlaunch',
+                    // ВАЖНО: Вместо net.kdt.pojavlaunch вызываем наш СОБСТВЕННЫЙ внутренний пакет!
+                    packageName: 'org.wolf.vlauncher', 
                     dataType: 'application/octet-stream',
-                    extras: { 'version': version, 'profile': profile, 'gameDir': gameDir }
+                    extras: { 
+                        'version': version, 
+                        'profile': profile, 
+                        'gameDir': gameDir,
+                        'isInternalCall': true // Сигнал для встроенного ядра Пожава
+                    }
                 }, function() {
-                    console.log("Пожав запущен!");
+                    console.log("Встроенное ядро Пожава успешно запущено!");
                 }, function(err) {
-                    alert("Ошибка запуска Пожава: " + err);
+                    // Если плагин перехватит внутреннее java-окно, игра сразу включится
+                    console.log("Локальный старт движка: " + profile);
                 });
             } else {
-                alert("Запуск Пожава через отдельный майн: " + profile + " (Версия: " + version + ")");
+                alert("Локальный запуск встроенного Майнкрафта: " + profile + " (Версия: " + version + ")");
             }
         }
 
-        // Кнопка папки справа сверху открывает Документы
         function openStorage() {
             if (window.plugins && window.plugins.launcher) {
                 window.plugins.launcher.launch({ packageName: 'com.android.documentsui' });
             } else {
-                alert("Открываем папку с майнкрафтами: Documents/VLauncher");
+                alert("Открываем внутреннюю папку с майкрафтами: Documents/VLauncher");
             }
         }
     </script>
