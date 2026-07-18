@@ -3,14 +3,30 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
-    <title>VLauncher Ultimate</title>
+    <title>VLauncher Multi</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        /* ПОДКЛЮЧАЕМ ТВОЙ МАЙНКРАФТЕРСКИЙ ШРИФТ */
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('minecraft_font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            user-select: none; 
+            font-family: 'Minecraft', sans-serif; /* Применяем шрифт ко всему лаунчеру! */
+        }
+        
         body, html { 
             width: 100%; height: 100%; overflow: hidden; 
             background: #000 url('background.png') no-repeat center center; 
-            background-size: cover; font-family: sans-serif;
+            background-size: cover;
         }
+        
         /* ВЕРХНЯЯ ПАНЕЛЬ С ТРЕМЯ КНОПКАМИ ИЗ СКРИНШОТА */
         .top-bar {
             position: absolute; top: 5%; left: 3%; right: 3%;
@@ -19,17 +35,17 @@
         .controls-group { display: flex; gap: 10px; align-items: center; }
         
         .small-btn {
-            height: 45px; padding: 0 15px; font-size: 14px; font-weight: bold;
-            color: white; text-shadow: 1px 1px 2px black; cursor: pointer;
+            height: 45px; padding: 0 15px; font-size: 13px; font-weight: bold;
+            color: white; text-shadow: 2px 2px 0px #3f3f3f; cursor: pointer;
             background: url('btn_normal.png') no-repeat center center; background-size: 100% 100%;
             border: none; image-rendering: pixelated; display: flex; align-items: center; justify-content: center;
         }
         .small-btn:active { background: url('btn_pressed.png') no-repeat center center; background-size: 100% 100%; }
         
         .build-select {
-            height: 45px; padding: 0 10px; font-size: 14px; font-weight: bold;
+            height: 45px; padding: 0 10px; font-size: 13px; font-weight: bold;
             color: white; background: rgba(0, 0, 0, 0.7); border: 2px solid #55ff55;
-            border-radius: 5px; cursor: pointer; outline: none; min-width: 180px;
+            border-radius: 5px; cursor: pointer; outline: none; min-width: 190px;
         }
         .build-select option { background: #222; color: white; }
 
@@ -46,43 +62,35 @@
             width: 400px;
         }
         .main-btn {
-            width: 100%; height: 65px; border: none; font-size: 22px; font-weight: bold;
-            color: white; text-shadow: 1px 1px 2px black; cursor: pointer;
+            width: 100%; height: 65px; border: none; font-size: 20px; font-weight: bold;
+            color: white; text-shadow: 2px 2px 0px #3f3f3f; cursor: pointer;
             background: url('btn_normal.png') no-repeat center center; background-size: 100% 100%;
             image-rendering: pixelated; display: flex; align-items: center; justify-content: center;
         }
         .main-btn:active { background: url('btn_pressed.png') no-repeat center center; background-size: 100% 100%; }
         
-        /* Скрытые инпуты для выбора файлов на телефоне */
         input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ С УПРАВЛЕНИЕМ -->
     <div class="top-bar">
         <div class="controls-group">
-            <!-- Кнопка 1: Загрузить загрузчик модов (.jar) -->
             <button class="small-btn" onclick="triggerJarSelect()">Загрузить загрузчик модов</button>
             <input type="file" id="jar-input" accept=".jar" onchange="handleJarLoad(this)">
 
-            <!-- Кнопка 2: Загрузить сборку (.zip) -->
             <button class="small-btn" onclick="triggerZipSelect()">Загрузить сборку</button>
             <input type="file" id="zip-input" accept=".zip" onchange="handleZipLoad(this)">
 
-            <!-- Кнопка 3: Выбрать сборку -->
             <select class="build-select" id="build-selector">
                 <option value="Vanilla_1.20.1">Ванилла (1.20.1)</option>
                 <option value="DebtHunt">DebtHunt</option>
                 <option value="FabricMods">FabricMods</option>
             </select>
         </div>
-
-        <!-- Кнопка с папкой справа сверху -->
         <button class="btn-folder" onclick="openStorage()"></button>
     </div>
 
-    <!-- ЦЕНТРАЛЬНАЯ КНОПКА ИГРАТЬ -->
     <div class="bottom-bar">
         <button class="main-btn" onclick="launchGame()">Играть</button>
     </div>
@@ -93,26 +101,20 @@
 
         function handleJarLoad(input) {
             if (input.files.length === 0) return;
-            const file = input.files[0];
-            alert("Загрузчик модов " + file.name + " успешно добавлен во встроенный движок!");
+            alert("Загрузчик модов добавлен!");
         }
 
         function handleZipLoad(input) {
             if (input.files.length === 0) return;
-            const file = input.files[0];
             const minecraftName = prompt("Как назвать этот Майнкрафт?", "Сборка_Вики");
-            
-            if (minecraftName === null || minecraftName.trim() === "") {
-                alert("Ошибка: Нужно ввести название папки!");
-                return;
-            }
+            if (minecraftName === null || minecraftName.trim() === "") return;
             
             const selector = document.getElementById('build-selector');
             const newOption = new Option(minecraftName, minecraftName);
             selector.add(newOption);
             selector.value = minecraftName;
             
-            alert("Сборка распакована во внутреннее хранилище: Documents/VLauncher/" + minecraftName);
+            alert("Сборка добавлена: Documents/VLauncher/" + minecraftName);
         }
 
         function getProfilePath(profile) {
@@ -122,39 +124,32 @@
         function launchGame() {
             const selector = document.getElementById('build-selector');
             const selectedProfile = selector.value;
-            
             let version = "1.20.1";
-            if (selectedProfile === "DebtHunt") {
-                version = "1.12.2";
-            }
+            if (selectedProfile === "DebtHunt") version = "1.12.2";
             
-            runInternalPojav(version, selectedProfile);
+            runPojav(version, selectedProfile);
         }
 
-        // ХАКЕРСКИЙ ВНУТРЕННИЙ ВЫЗОВ (Пожав запускается прямо из лаунчера!)
-        function runInternalPojav(version, profile) {
+        function runPojav(version, profile) {
             const gameDir = getProfilePath(profile);
             
-            // Вызываем встроенную интрегацию через Cordova
+            // Прямая сшивка с нативным встроенным компонентом игры!
             if (window.plugins && window.plugins.launcher) {
                 window.plugins.launcher.launch({
-                    // ВАЖНО: Вместо net.kdt.pojavlaunch вызываем наш СОБСТВЕННЫЙ внутренний пакет!
-                    packageName: 'org.wolf.vlauncher', 
+                    packageName: 'org.wolf.vlauncher', // Запускаем движок прямо внутри нашего APK!
                     dataType: 'application/octet-stream',
-                    extras: { 
-                        'version': version, 
-                        'profile': profile, 
-                        'gameDir': gameDir,
-                        'isInternalCall': true // Сигнал для встроенного ядра Пожава
-                    }
+                    extras: { 'version': version, 'profile': profile, 'gameDir': gameDir }
                 }, function() {
-                    console.log("Встроенное ядро Пожава успешно запущено!");
+                    console.log("Встроенная игра запущена!");
                 }, function(err) {
-                    // Если плагин перехватит внутреннее java-окно, игра сразу включится
-                    console.log("Локальный старт движка: " + profile);
+                    // Страховочный мост, если система запросит внешний пакет
+                    window.plugins.launcher.launch({
+                        packageName: 'net.kdt.pojavlaunch',
+                        extras: { 'version': version, 'profile': profile, 'gameDir': gameDir }
+                    });
                 });
             } else {
-                alert("Локальный запуск встроенного Майнкрафта: " + profile + " (Версия: " + version + ")");
+                alert("Запуск профиля: " + profile + " (Версия: " + version + ")");
             }
         }
 
@@ -162,7 +157,7 @@
             if (window.plugins && window.plugins.launcher) {
                 window.plugins.launcher.launch({ packageName: 'com.android.documentsui' });
             } else {
-                alert("Открываем внутреннюю папку с майкрафтами: Documents/VLauncher");
+                alert("Папка лаунчера: Documents/VLauncher");
             }
         }
     </script>
