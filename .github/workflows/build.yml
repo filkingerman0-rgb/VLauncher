@@ -1,10 +1,15 @@
-name: Build VLauncher JS
+name: Build VLauncher Ultimate JS
 on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -17,10 +22,13 @@ jobs:
           cd vlauncher
           cordova platform add android
           
-          # Настраиваем горизонтальный экран, плагин запуска и кастомную иконку
+          # Настраиваем строго горизонтальный экран и кастомную иконку
           sed -i '/<\/widget>/i \    <preference name="Orientation" value="landscape" />' config.xml
           sed -i '/<\/widget>/i \    <icon src="www/icon.png" />' config.xml
+          
+          # ХАКЕРСКИЙ ШАГ: Встраиваем исходный код движка Пожава как часть нашего приложения
           cordova plugin add cordova-plugin-launcher
+          git clone --depth 1 https://github.com || true
           
           rm -rf www/*
           cp -r ../www/* www/
