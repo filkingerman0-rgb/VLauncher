@@ -17,7 +17,6 @@ jobs:
           mkdir -p core/src/main/java/org/wolf/volkaufengine
           echo "include ':core'" > settings.gradle
           
-          # Настройки главного сборщика Gradle
           cat <<EOF > build.gradle
           buildscript {
               repositories { google() ; mavenCentral() }
@@ -27,15 +26,12 @@ jobs:
               repositories { google() ; mavenCentral() }
           }
           EOF
-          
-          # ХАКЕРСКИЙ ШАГ: Создаём запускщик Gradle прямо в облаке!
-          gradle wrapper
       - name: Compile VolkAufEngine APK
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          # Используем встроенный глобальный компилятор Gradle, чтобы не зависеть от файлов в корне
+          gradle assembleDebug --stacktrace
       - name: Upload VolkAufEngine APK
         uses: actions/upload-artifact@v4
         with:
           name: VolkAufEngine-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          path: "core/build/outputs/apk/debug/*.apk"
