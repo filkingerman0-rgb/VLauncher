@@ -1,11 +1,11 @@
-plugins { id 'com.android.library' }
+plugins { id 'com.android.application' }
 
 android {
-    namespace 'org.wolf.vengine'
+    namespace 'org.wolf.volkaufengine'
     compileSdk 33
     defaultConfig {
+        applicationId "org.wolf.volkaufengine"
         minSdk 24
-        // Указываем архитектуру процессоров MediaTek для Samsung и Redmi
         ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
     }
 }
@@ -16,7 +16,10 @@ repositories {
 }
 
 dependencies {
-    // Подключаем нативное ядро LWJGL для отрисовки графики Майнкрафта через GLES3
+    // Подключаем интерфейс под наши XML-кнопки со скриншота
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    
+    // Нативное игровое ядро LWJGL
     implementation 'org.lwjgl:lwjgl:3.3.1'
     implementation 'org.lwjgl:lwjgl-opengles:3.3.1'
 }
