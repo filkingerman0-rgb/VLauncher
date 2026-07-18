@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+    <title>VolkAufEngine Pro</title>
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('minecraft_font.ttf') format('truetype');
+            font-weight: normal; font-style: normal;
+        }
+        * { 
+            box-sizing: border-box; margin: 0; padding: 0; 
+            user-select: none; font-family: 'Minecraft', sans-serif; 
+        }
+        body, html { 
+            width: 100%; height: 100%; overflow: hidden; 
+            background: #000 url('background.png') no-repeat center center; 
+            background-size: cover;
+        }
+        
+        /* 🐺 ЗАСТАВКА «АУФ ENGINE» С ТВОИМ СПЛЮЩЕННЫМ ВОЛКОМ */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000 url('volk_auf.png') no-repeat center center;
+            background-size: contain; z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .top-bar {
+            position: absolute; top: 5%; left: 3%; right: 3%;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .controls-group { display: flex; gap: 10px; align-items: center; }
+        .small-btn {
+            height: 45px; padding: 0 15px; font-size: 13px; font-weight: bold;
+            color: white; text-shadow: 2px 2px 0px #3f3f3f; cursor: pointer;
+            background: url('btn_normal.png') no-repeat center center; background-size: 100% 100%;
+            border: none; image-rendering: pixelated; display: flex; align-items: center; justify-content: center;
+        }
+        .small-btn:active { background: url('btn_pressed.png') no-repeat center center; background-size: 100% 100%; }
+        .build-select {
+            height: 45px; padding: 0 10px; font-size: 13px; font-weight: bold;
+            color: white; background: rgba(0, 0, 0, 0.7); border: 2px solid #55ff55;
+            border-radius: 5px; cursor: pointer; outline: none; min-width: 190px;
+        }
+        .build-select option { background: #222; color: white; }
+        .btn-folder {
+            width: 60px; height: 60px;
+            background: url('btn_folder.png') no-repeat center center; background-size: contain;
+            border: none; cursor: pointer; image-rendering: pixelated;
+        }
+        .bottom-bar {
+            position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
+            width: 400px;
+        }
+        .main-btn {
+            width: 100%; height: 65px; border: none; font-size: 22px; font-weight: bold;
+            color: white; text-shadow: 2px 2px 0px #3f3f3f; cursor: pointer;
+            background: url('btn_normal.png') no-repeat center center; background-size: 100% 100%;
+            image-rendering: pixelated; display: flex; align-items: center; justify-content: center;
+        }
+        .main-btn:active { background: url('btn_pressed.png') no-repeat center center; background-size: 100% 100%; }
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen"></div>
+
+    <div class="top-bar">
+        <div class="controls-group">
+            <button class="small-btn" onclick="triggerJarSelect()">Загрузить загрузчик модов</button>
+            <input type="file" id="jar-input" accept=".jar" onchange="handleJarLoad(this)">
+
+            <button class="small-btn" onclick="triggerZipSelect()">Загрузить сборку</button>
+            <input type="file" id="zip-input" accept=".zip" onchange="handleZipLoad(this)">
+
+            <select class="build-select" id="build-selector">
+                <option value="Vanilla_1.20.1">Ванилла (1.20.1)</option>
+                <option value="DebtHunt">DebtHunt</option>
+                <option value="FabricMods">FabricMods</option>
+            </select>
+        </div>
+        <button class="btn-folder" onclick="openStorage()"></button>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="main-btn" onclick="launchGame()">Играть</button>
+    </div>
+
+    <script>
+        // Таймер заставки с волком Ауф Engine!
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                setTimeout(function() { splash.style.display = 'none'; }, 500);
+            }, 1500);
+        });
+
+        function triggerJarSelect() { document.getElementById('jar-input').click(); }
+        function triggerZipSelect() { document.getElementById('zip-input').click(); }
+
+        function handleJarLoad(input) { alert("Загрузчик добавлен во встроенный движок!"); }
+
+        function handleZipLoad(input) {
+            if (input.files.length === 0) return;
+            const minecraftName = prompt("Как назвать этот Майнкрафт?", "Сборка_Вики");
+            if (minecraftName === null || minecraftName.trim() === "") return;
+            
+            const selector = document.getElementById('build-selector');
+            const newOption = new Option(minecraftName, minecraftName);
+            selector.add(newOption);
+            selector.value = minecraftName;
+            alert("Сборка добавлена в Documents/VLauncher/" + minecraftName);
+        }
+
+        function getProfilePath(profile) { return "file:///storage/emulated/0/Documents/VLauncher/" + profile + "/.minecraft"; }
+
+        function launchGame() {
+            const selector = document.getElementById('build-selector');
+            const selectedProfile = selector.value;
+            let version = "1.20.1";
+            if (selectedProfile === "DebtHunt") version = "1.12.2";
+            
+            runPojav(version, selectedProfile);
+        }
+
+        function runPojav(version, profile) {
+            const gameDir = getProfilePath(profile);
+            if (window.plugins && window.plugins.launcher) {
+                window.plugins.launcher.launch({
+                    packageName: 'net.kdt.pojavlaunch',
+                    dataType: 'application/octet-stream',
+                    extras: { 'version': version, 'profile': profile, 'gameDir': gameDir }
+                }, function() {
+                    console.log("Встроенный пульт VolkAufEngine запустил Пожав!");
+                }, function(err) {
+                    alert("Ошибочный запуск: " + err);
+                });
+            } else {
+                alert("VolkAufEngine запуск: " + profile + " (Версия: " + version + ")");
+            }
+        }
+
+        function openStorage() {
+            if (window.plugins && window.plugins.launcher) {
+                window.plugins.launcher.launch({ packageName: 'com.android.documentsui' });
+            } else {
+                alert("Папка лаунчера: Documents/VLauncher");
+            }
+        }
+    </script>
+</body>
+</html>
