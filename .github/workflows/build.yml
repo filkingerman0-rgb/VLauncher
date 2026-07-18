@@ -14,7 +14,6 @@ jobs:
         uses: android-actions/setup-android@v3
       - name: Initialize Android Project
         run: |
-          # Создаём правильную народную структуру пакетов для VolkAufEngine
           mkdir -p core/src/main/java/org/wolf/volkaufengine
           echo "include ':core'" > settings.gradle
           
@@ -28,10 +27,13 @@ jobs:
               repositories { google() ; mavenCentral() }
           }
           EOF
+          
+          # ХАКЕРСКИЙ ШАГ: Создаём запускщик Gradle прямо в облаке!
+          gradle wrapper
       - name: Compile VolkAufEngine APK
         run: |
-          chmod +x gradlew || true
-          ./gradlew assembleDebug || gradle assembleDebug || true
+          chmod +x gradlew
+          ./gradlew assembleDebug
       - name: Upload VolkAufEngine APK
         uses: actions/upload-artifact@v4
         with:
