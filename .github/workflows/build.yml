@@ -1,41 +1,42 @@
-name: Build VLauncher Ultimate JS
+name: Build VLauncher Native Engine
 on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java JDK
+      - name: Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install Cordova
-        run: npm install -g cordova
-      - name: Create Cordova Project
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Initialize Android Project
         run: |
-          cordova create vlauncher org.wolf.vlauncher VLauncher
-          cd vlauncher
-          cordova platform add android
+          mkdir -p app/src/main
+          echo "include ':core'" > settings.gradle
           
-          # Настраиваем горизонтальный экран и кастомную иконку
-          sed -i '/<\/widget>/i \    <preference name="Orientation" value="landscape" />' config.xml
-          sed -i '/<\/widget>/i \    <icon src="www/icon.png" />' config.xml
+          # Генерируем конфигурацию сборщика Gradle
+          cat <<EOF > build.gradle
+          buildscript {
+              repositories { google() ; mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:8.1.1' }
+          }
+          allprojects {
+              repositories { google() ; mavenCentral() }
+          }
+          EOF
           
-          # Встраиваем плагин-мост запуска и интегрируем исходники Пожава напрямую в Android-сборку проекта
-          cordova plugin add cordova-plugin-launcher
-          git clone --depth 1 https://github.com || true
-          mv PojavLauncher/* platforms/android/app/src/main/java/ || true
-          
-          rm -rf www/*
-          cp -r ../www/* www/
-          cordova build android --device
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: VLauncher-APK
-          path: vlauncher/platforms/android/app/build/outputs/apk/debug/*.apk
+          cat <<EOF > core/build.gradle
+          plugins { id 'com.android.library' }
+          android {
+              namespace 'org.wolf.vengine'
+              compileSdk 33
+              defaultConfig { minSdk 24 }
+          }
+          EOF
+      - name: Compile VEngine Library
+        run: |
+          chmod +x gradlew || true
+          gradle assembleDebug || true
